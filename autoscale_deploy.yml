@@ -1,0 +1,49 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: my-web-deploy-autoscale          #Название Deploment
+  labels:
+    project: prod
+    env : project_v2
+    owner: AlekseySvidlo
+spec:                               
+  replicas: 3
+  selector:
+    matchLabels:                  #Лейблы, с которыми будут считаться поды в Deployment
+      project: dev
+  template:
+    metadata:
+      labels:
+        project: dev
+    spec:
+      containers:
+        - name: dev-web
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-autoscale
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-web-deploy-autoscale
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource: 
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
