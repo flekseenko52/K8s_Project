@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flekseenko-deply
+  labels:
+    project: prod
+    owner: AlekseySvidlo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      project: prod
+  template:
+    metadata:
+      labels:
+        project: prod
+    spec:
+      containers:
+        - name: prod-web
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prod-service-web
+  labels:
+    env: prod 
+    owner: AlekseySvidlo
+spec:
+  selector:
+    project: prod         #Будет выбирать Поды из Deploy с таким лейбллом
+  ports:
+    - name: web-listener
+      protocol: TCP
+      port: 80    #Port on LoadBalancer
+      targetPort: 80   #Port on Pod
+  type: LoadBalancer
